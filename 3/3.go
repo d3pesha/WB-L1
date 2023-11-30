@@ -9,13 +9,10 @@ import (
 Найти сумму их квадратов с использованием конкурентных вычислений. */
 
 func square(n int, c chan int, wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer wg.Done() // Уменьшение счётчика вг
 
-	sq := 1
-	for i := 1; i <= n; i++ {
-		sq = i * i
-	}
-	c <- sq
+	res := n * n // Вычисление квадрата числа
+	c <- res     // Отправка результата в канал
 }
 
 func main() {
@@ -23,19 +20,23 @@ func main() {
 	array := []int{2, 4, 6, 8, 10}
 	c := make(chan int, len(array))
 
+	// Запуск горутин для вычисления квадрата чисел в массиве
 	for _, i := range array {
-		wg.Add(1)
+		wg.Add(1) // Увеличение счетчика вг перед запуском горутины
 		go square(i, c, &wg)
 	}
+
+	// Запуск горутины для ожидания завершения всех горутин
 	go func() {
 		wg.Wait()
-		close(c)
+		close(c) //закрытие канала
 	}()
 
+	// Суммирование результатов из канала и вывод их в консоль
 	sum := 0
 	for res := range c {
 		sum += res
-		fmt.Printf("test %d ", sum)
+		fmt.Printf("%d ", sum)
 	}
 
 }

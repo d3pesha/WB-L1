@@ -10,7 +10,7 @@ type Human struct {
 }
 
 type Action struct {
-	Human
+	Human   // встраивание структуры Human
 	message string
 }
 
@@ -23,10 +23,12 @@ func (a *Action) sendMessageInAction() {
 }
 
 func main() {
+	// создание объекта Action с встроенным объектом Human
 	action := Action{
-		Human:   Human{message: "Hello"},
-		message: "world",
+		Human:   Human{message: "Hello"}, // инициализация встроенного Human
+		message: "world",                 // инициализация message в Action
 	}
+	// вызов методов
 	action.sendMessage()
 	action.sendMessageInAction()
 }
