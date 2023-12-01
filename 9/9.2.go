@@ -11,37 +11,48 @@ import (
 
 func main() {
 
+	// объявление двух каналов
 	var (
 		ch1 = make(chan int)
 		ch2 = make(chan int)
 	)
+
+	// добавление контекста для выхода
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Горутина для умножения чисел на 2 и записи во второй канал
 	go func() {
+		defer close(ch2)
 		for {
 			select {
-			case ch2 <- (<-ch1 * 2):
-			case <-ctx.Done():
+			default:
+				ch2 <- (<-ch1 * 2) //запись в канал данных
+			case <-ctx.Done(): //выход из горутины
 				return
 
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			select {
-			case x := <-ch2:
-				fmt.Println(x)
-
-			case <-ctx.Done():
-				return
 			}
 
 		}
 	}()
+	// чтение из второго канала и вывода данных
+	go func() {
+		for {
+			select {
+			case x, ok := <-ch2:
+				if !ok {
+					return // если канал закрыт - выход
+				}
+				fmt.Println(x) // вывод
 
+			case <-ctx.Done():
+				return // Выход из горутины при получении сигнала отмены
+			}
+
+		}
+	}()
+
+	// запись чисел в первый канал
 	for i := 0; ; i++ {
 		ch1 <- i
 		time.Sleep(time.Second)
